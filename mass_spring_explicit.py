@@ -1,12 +1,12 @@
 import taichi as ti
 
-ti.init(debug=True)
+ti.init(arch = ti.cpu,debug=True)
 
 max_num_particles = 256
 
 dt = 1e-3
 
-num_particles = ti.var(ti.i32, shape=())
+num_particles = ti.var(ti.i32, shape=()) # 一个0维的变量，访问和修改需要使用num_particles[None]
 spring_stiffness = ti.var(ti.f32, shape=())
 paused = ti.var(ti.i32, shape=())
 damping = ti.var(ti.f32, shape=())
@@ -15,10 +15,12 @@ particle_mass = 1
 bottom_y = 0.05
 
 x = ti.Vector(2, dt=ti.f32, shape=max_num_particles)
+#x = ti.Vector.field(2, dt=ti.f32, shape=max_num_particles)
 v = ti.Vector(2, dt=ti.f32, shape=max_num_particles)
-
 A = ti.Matrix(2, 2, dt=ti.f32, shape=(max_num_particles, max_num_particles))
 b = ti.Vector(2, dt=ti.f32, shape=max_num_particles)
+
+fixed = ti.field(dtype=ti.i32,shape=max_num_particles)
 
 # rest_length[i, j] = 0 means i and j are not connected
 rest_length = ti.var(ti.f32, shape=(max_num_particles, max_num_particles))
@@ -26,18 +28,24 @@ rest_length = ti.var(ti.f32, shape=(max_num_particles, max_num_particles))
 connection_radius = 0.15
 
 gravity = [0, -9.8]
-
+# 一开始就要声明所有的变量
 @ti.kernel
 def substep():
+    # 将模拟推进一个步长
     # Compute force and new velocity
     n = num_particles[None]
     for i in range(n):
+        # 速度的阻尼 在全局作用下的影响 还有一种减速的是移动时来自相邻粒子的速度影响，这里省略了
         v[i] *= ti.exp(-dt * damping[None]) # damping
-        total_force = ti.Vector(gravity) * particle_mass
+        #total_force = ti.Vector(gravity) * particle_mass
+        total_force = ti.Vector(gravity) * 0
         for j in range(n):
+            # 遍历所有的对
             if rest_length[i, j] != 0:
+                # 通过距离计算粒子之间的力
                 x_ij = x[i] - x[j]
                 total_force += -spring_stiffness[None] * (x_ij.norm() - rest_length[i, j]) * x_ij.normalized()
+        # 力对这个粒子的速度的影响
         v[i] += dt * total_force / particle_mass
         
     # Collide with ground
@@ -47,10 +55,11 @@ def substep():
             v[i].y = 0
 
     # Compute new position
+    # 更新了速度之后计算位移 semi-implicit
     for i in range(num_particles[None]):
         x[i] += v[i] * dt
 
-        
+
 @ti.kernel
 def new_particle(pos_x: ti.f32, pos_y: ti.f32): # Taichi doesn't support using Matrices as kernel arguments yet
     new_particle_id = num_particles[None]
@@ -82,6 +91,7 @@ while True:
         elif e.key == gui.SPACE:
             paused[None] = not paused[None]
         elif e.key == ti.GUI.LMB:
+            print(e.pos)
             new_particle(e.pos[0], e.pos[1])
         elif e.key == 'c':
             num_particles[None] = 0
@@ -99,9 +109,11 @@ while True:
                 
     if not paused[None]:
         for step in range(10):
+            # 每帧跑10次substep
             substep()
-    
+    # 读取taichi的field的粒子位置很慢，转成Numpy去读取
     X = x.to_numpy()
+    # 传入一个数组一次性渲染完成
     gui.circles(X[:num_particles[None]], color=0xffaa77, radius=5)
     
     gui.line(begin=(0.0, bottom_y), end=(1.0, bottom_y), color=0x0, radius=1)
