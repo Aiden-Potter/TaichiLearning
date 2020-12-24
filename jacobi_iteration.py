@@ -15,10 +15,11 @@ def iterate():
     for i in range(n):
         r = b[i]
         for j in range(n):
+            
             if i != j:
                 r -= A[i, j] * x[j]
-                
-        new_x[i] = r / A[i, i]
+                # 有公式可以套
+        new_x[i] = r / A[i, i] # 高斯就是一边迭代一边更新x
         
     for i in range(n):
         x[i] = new_x[i]

@@ -43,24 +43,12 @@ def substep():
             if rest_length[i, j] != 0:
                 x_ij = x[i] - x[j]
                 d = x_ij.normalized()
-
                 # Spring force
                 f[i] += -spring_stiffness[None] * (x_ij.norm() / rest_length[i, j] -
                                            1) * d
-
-                # Dashpot damping 相对速度 解决抽搐的问题 减震器，点乘算大小，方向在两点连线上
-                v_rel = (v[i] - v[j]).dot(d)
-                f[i] += -dashpot_damping[None] * v_rel * d
-    for i in range(n):
-        # 速度的阻尼 在全局作用下的影响 还有一种减速的是移动时来自相邻粒子的速度影响，这里省略了
-        if not fixed[i]:
-            v[i] += dt*f[i] / particle_mass
-            v[i] *= ti.exp(-dt * damping[None])  # drag damping
-            x[i] += v[i]*dt
-        else:
-            v[i] = ti.Vector([0,0])
-            # fixed则不更新位置
-
+                # # Dashpot damping 相对速度 解决抽搐的问题 减震器，点乘算大小，方向在两点连线上
+                # v_rel = (v[i] - v[j]).dot(d)
+                # f[i] += -dashpot_damping[None] * v_rel * d
     # Collide with ground
     for i in range(n):
         if x[i].y < bottom_y:
@@ -72,11 +60,22 @@ def substep():
         if x[i].x > 1:
             x[i].x = 1
             v[i].x = 0
+    for i in range(n):
+        # 速度的阻尼 在全局作用下的影响
+        if not fixed[i]:
+            v[i] += dt*f[i] / particle_mass
+            v[i] *= ti.exp(-dt * damping[None])  # drag damping
+            x[i] += v[i]*dt
+        else:
+            v[i] = ti.Vector([0,0])
+            # fixed则不更新位置
 
-    # Compute new position
-    # 更新了速度之后计算位移 semi-implicit
-    for i in range(num_particles[None]):
-        x[i] += v[i] * dt
+
+
+    # # Compute new position
+    # # 更新了速度之后计算位移 semi-implicit
+    # for i in range(num_particles[None]):
+    #     x[i] += v[i] * dt
 
 
 @ti.kernel
