@@ -28,7 +28,7 @@ def paint():
             q = min(N - 1, max(0, int((x_rest[1] + 0.5) * N)))
             canvas[i, j] = img[p, q]
 
-F[None] = [[2, 0], [0.5, 1]]
+F[None] = [[1, 0], [0, 2]] # 形变梯度的矩阵
 
 gui = ti.GUI('Deformation', (N * 2, N))
 
