@@ -1,8 +1,8 @@
 # author: g1n0st
 # Utility for Implicit Method, including solve A and b (Ax = b)
-import sys
-sys.path.append('../')
-from mass_spring_framework import *
+# import sys
+# sys.path.append('../')
+from hw1.mass-spring.implicit_utility import *
 
 # mass matrix of diag(m1, m2, ..., mn)
 M = ti.Matrix(2, 2, dt = ti.f32, shape = (max_particles, max_particles))

@@ -2,7 +2,7 @@
 # Symplectic Euler Method for Mass-Spring System
 import sys
 sys.path.append('../')
-from mass_spring_framework import *
+from ..mass_spring_framework import *
 
 @ti.kernel
 def substep():

@@ -73,7 +73,7 @@ def integrate():
             v[p][1] = 0
         v[p] = (v[p] + (
             (-x.grad[p] / node_mass) + ti.Vector([0, -10])) * dt) * math.exp(
-                dt * -6)
+                dt * -6) # 加速度里加了重力，施恩那个关于x的导数的负得到了力
         x[p] += dt * v[p]
 
 
@@ -110,7 +110,7 @@ while True:
         # Note that we are now differentiating the total energy w.r.t. the particle position.
         # Recall that F = - \partial (total_energy) / \partial x
         with ti.Tape(total_energy):
-            compute_total_energy()
+            compute_total_energy() # 计算这个过程的导数
         integrate()
 
     while gui.get_event(ti.GUI.PRESS):

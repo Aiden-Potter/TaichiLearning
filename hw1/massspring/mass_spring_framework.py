@@ -3,7 +3,6 @@
 # including UI interface, user input and editing operations
 import taichi as ti
 import numpy as np
-
 ti.init(debug = False)
 
 max_particles = 256                         # the maximum number of particles

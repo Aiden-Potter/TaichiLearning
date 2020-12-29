@@ -6,6 +6,7 @@ ti.init()
 N = 320
 
 img = ti.Vector(3, dt=ti.f32, shape=(N, N))
+# 画布
 canvas = ti.Vector(3, dt=ti.f32, shape=(N * 2, N))
 F = ti.Matrix(2, 2, dt=ti.f32, shape=())
 cursor_rest = ti.Vector(2, dt=ti.f32, shape=())

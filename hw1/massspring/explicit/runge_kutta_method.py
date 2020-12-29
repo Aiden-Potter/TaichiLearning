@@ -1,8 +1,8 @@
 # author: g1n0st
 # Runge-Kutta Method for Mass-Spring System
 import sys
-sys.path.append('../')
-from mass_spring_framework import *
+#sys.path.append('../')
+from ..mass_spring_framework import *
 
 v2 = ti.Vector(2, dt = ti.f32, shape = max_particles)
 v3 = ti.Vector(2, dt = ti.f32, shape = max_particles)
